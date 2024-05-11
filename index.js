@@ -36,7 +36,14 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+    // mongodb collection setup
+    const jobsCollection = client.db("CareerLinkup").collection("jobs");
+
+    // get all jobs data from mongodb 
+    app.get('/jobs', async(req , res)=> {
+        const result = await jobsCollection.find().toArray();
+        res.send(result);
+    }) 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
