@@ -47,9 +47,14 @@ async function run() {
         expiresIn: "180d",
       });
 
-      res.send({ token });
+      res.cookie('token' , token , {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
+      }).send({success: true});
     });
 
+    
     // get all jobs data from mongodb
     app.get("/jobs", async (req, res) => {
       const result = await jobsCollection.find().toArray();
