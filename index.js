@@ -83,6 +83,13 @@ async function run() {
       const result = await jobsCollection.find(query).toArray();
       res.send(result);
     });
+    // delete a job data from mongodb
+    app.delete("/job/:id", async (req, res) => {
+      const jobId =  req.params.id;
+      const query = {_id : new ObjectId(jobId)}
+      const result = await jobsCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
