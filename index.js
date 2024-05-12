@@ -38,6 +38,7 @@ async function run() {
   try {
     // mongodb collection setup
     const jobsCollection = client.db("CareerLinkup").collection("jobs");
+    const applyJobsCollection = client.db("CareerLinkup").collection("applyJobs");
 
     // get all jobs data from mongodb 
     app.get('/jobs', async(req , res)=> {
@@ -52,7 +53,17 @@ async function run() {
             const query = {_id : new ObjectId(id)}
         const result = await jobsCollection.findOne(query);
         res.send(result);
-    })
+    });
+
+    
+    // update Applicants Number in mongodb
+    app.put('/job/:id', async(req , res)=>{
+       const jobId  = req.params.id;
+       const query = {_id : new ObjectId(jobId)}
+       const result = await jobsCollection.updateOne(query ,  { $inc: { applicantsNumber: 1 } });
+       res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
