@@ -61,6 +61,7 @@ async function run() {
       const result = await applyJobsCollection.insertOne(applyJobsData);
       res.send(result);
    });
+
     
     // update Applicants Number in mongodb
     app.put('/job/:id', async(req , res)=>{
@@ -69,6 +70,13 @@ async function run() {
        const result = await jobsCollection.updateOne(query ,  { $inc: { applicantsNumber: 1 } });
        res.send(result);
     });
+
+    // add a job data from mongodb 
+    app.post('/jobs', async(req , res)=> {
+      const jobData = req.body;
+      const result = await jobsCollection.insertOne(jobData);
+      res.send(result);
+  });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
