@@ -55,6 +55,12 @@ async function run() {
         res.send(result);
     });
 
+    // save apply jobs data in mongodb
+    app.post('/appliedJobs', async(req , res)=>{
+      const applyJobsData  = req.body;
+      const result = await applyJobsCollection.insertOne(applyJobsData);
+      res.send(result);
+   });
     
     // update Applicants Number in mongodb
     app.put('/job/:id', async(req , res)=>{
