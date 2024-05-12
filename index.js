@@ -1,4 +1,6 @@
 const express = require("express");
+const cookieParser = require('cookie-parser')
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -37,6 +39,16 @@ async function run() {
     const applyJobsCollection = client
       .db("CareerLinkup")
       .collection("applyJobs");
+
+    // jwt
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "180d",
+      });
+
+      res.send({ token });
+    });
 
     // get all jobs data from mongodb
     app.get("/jobs", async (req, res) => {
@@ -78,32 +90,32 @@ async function run() {
 
     // get all jobs posted by a specific user
     app.get("/jobs/:email", async (req, res) => {
-      const userEmail =  req.params.email;
-      const query = {'jobUser.email' : userEmail}
+      const userEmail = req.params.email;
+      const query = { "jobUser.email": userEmail };
       const result = await jobsCollection.find(query).toArray();
       res.send(result);
     });
     // delete a job data from mongodb
     app.delete("/job/:id", async (req, res) => {
-      const jobId =  req.params.id;
-      const query = {_id : new ObjectId(jobId)}
+      const jobId = req.params.id;
+      const query = { _id: new ObjectId(jobId) };
       const result = await jobsCollection.deleteOne(query);
       res.send(result);
     });
-    // update a job data 
-    app.put("/job/:id", async(req ,res)=>{
-      const jobId =  req.params.id;
+    // update a job data
+    app.put("/job/:id", async (req, res) => {
+      const jobId = req.params.id;
       const jobData = req.body;
-      const query = {_id : new ObjectId(jobId)};
-      const options = {upsert : true};
+      const query = { _id: new ObjectId(jobId) };
+      const options = { upsert: true };
       const updateDoc = {
         $set: {
           ...jobData,
-        }
-      }
-      const result = await jobsCollection.updateOne(query , updateDoc , options);
+        },
+      };
+      const result = await jobsCollection.updateOne(query, updateDoc, options);
       res.send(result);
-    })
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
