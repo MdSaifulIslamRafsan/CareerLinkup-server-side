@@ -60,7 +60,7 @@ async function run() {
     });
 
     // update Applicants Number in mongodb
-    app.put("/job/:id", async (req, res) => {
+    app.post("/job/:id", async (req, res) => {
       const jobId = req.params.id;
       const query = { _id: new ObjectId(jobId) };
       const result = await jobsCollection.updateOne(query, {
@@ -90,6 +90,20 @@ async function run() {
       const result = await jobsCollection.deleteOne(query);
       res.send(result);
     });
+    // update a job data 
+    app.put("/job/:id", async(req ,res)=>{
+      const jobId =  req.params.id;
+      const jobData = req.body;
+      const query = {_id : new ObjectId(jobId)};
+      const options = {upsert : true};
+      const updateDoc = {
+        $set: {
+          ...jobData,
+        }
+      }
+      const result = await jobsCollection.updateOne(query , updateDoc , options);
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
