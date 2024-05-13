@@ -20,6 +20,27 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(cookieParser());
+
+// jwt middleware
+
+  const tokenVerify = (req , res , next) => {
+    const token = req.cookies?.token;
+    if(!token){
+      return res.status(401).send({message: "unauthorized access"})
+    }
+      if(token){
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET , (err , decoded)=>{
+          if(err){
+            console.log(err);
+           return res.status(401).send({message: "unauthorized access"});
+          }
+          console.log(decoded);
+          req.user = decoded;
+          next();
+        });
+      }
+  }
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.edk1eij.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -46,7 +67,7 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "180d",
       });
-
+      // save cookie when user login
       res.cookie('token' , token , {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -54,7 +75,17 @@ async function run() {
       }).send({success: true});
     });
 
-    
+    // clear token on logout
+    app.get('/logout', (req ,res)=>{
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        maxAge:0,
+        
+      }).send({success: true});
+    });
+
     // get all jobs data from mongodb
     app.get("/jobs", async (req, res) => {
       const result = await jobsCollection.find().toArray();
@@ -94,8 +125,13 @@ async function run() {
     });
 
     // get all jobs posted by a specific user
-    app.get("/jobs/:email", async (req, res) => {
+    app.get("/jobs/:email", tokenVerify, async (req, res) => {
+      const tokenEmail = req.user.email;
+      console.log(tokenData, 'form token');
       const userEmail = req.params.email;
+    if(tokenEmail !== userEmail){
+      return res.status(403).send({message: "forbidden access"})
+    }
       const query = { "jobUser.email": userEmail };
       const result = await jobsCollection.find(query).toArray();
       res.send(result);
