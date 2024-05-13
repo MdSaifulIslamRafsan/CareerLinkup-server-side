@@ -32,10 +32,8 @@ app.use(cookieParser());
       if(token){
         jwt.verify(token, process.env.ACCESS_TOKEN_SECRET , (err , decoded)=>{
           if(err){
-            console.log(err);
            return res.status(401).send({message: "unauthorized access"});
           }
-          console.log(decoded);
           req.user = decoded;
           next();
         });
@@ -103,6 +101,16 @@ async function run() {
     // save apply jobs data in mongodb
     app.post("/appliedJobs", async (req, res) => {
       const applyJobsData = req.body;
+       // check duplicate request 
+       const query = {
+        email: applyJobsData.email,
+        jobId: applyJobsData.jobId
+
+       };
+       const alreadyApplied = await applyJobsCollection.findOne(query);
+       if(alreadyApplied){
+        return res.status(400).send('You have already applied this job')
+       }
       const result = await applyJobsCollection.insertOne(applyJobsData);
       res.send(result);
     });
@@ -127,7 +135,6 @@ async function run() {
     // get all jobs posted by a specific user
     app.get("/jobs/:email", tokenVerify, async (req, res) => {
       const tokenEmail = req.user.email;
-      console.log(tokenData, 'form token');
       const userEmail = req.params.email;
     if(tokenEmail !== userEmail){
       return res.status(403).send({message: "forbidden access"})
