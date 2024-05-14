@@ -104,7 +104,7 @@ async function run() {
        // check duplicate request 
        const query = {
         email: applyJobsData.email,
-        jobId: applyJobsData.jobId
+        jobID: applyJobsData.jobID
 
        };
        const alreadyApplied = await applyJobsCollection.findOne(query);
@@ -143,6 +143,26 @@ async function run() {
       const result = await jobsCollection.find(query).toArray();
       res.send(result);
     });
+    // get applied jobs posted by a specific user
+    app.get("/appliedJobs/:email", tokenVerify, async (req, res) => {
+      const tokenEmail = req.user.email;
+      const userEmail = req.params.email;
+      const filter = req.query.filter;
+      let query = {};
+      if(filter){
+        query = { email: userEmail , category : filter };
+       }else{
+         query = {email: userEmail}
+       }
+ 
+      
+    if(tokenEmail !== userEmail){
+      return res.status(403).send({message: "forbidden access"})
+    }
+      
+      const result = await applyJobsCollection.find(query).toArray();
+      res.send(result);
+    });
     // delete a job data from mongodb
     app.delete("/job/:id", async (req, res) => {
       const jobId = req.params.id;
@@ -164,6 +184,27 @@ async function run() {
       const result = await jobsCollection.updateOne(query, updateDoc, options);
       res.send(result);
     });
+    // get all jobs data from mongodb for pagination
+    app.get("/all-jobs", async (req, res) => {
+      const size = parseInt(req.query.size);
+      const page = parseInt(req.query.page - 1);
+      const search = req.query.search;
+      const query = {
+        jobTitle : {$regex : search , $options:'i'}
+      }
+      const result = await jobsCollection.find(query).skip(page * size).limit(size).toArray();
+      res.send(result);
+    });
+    // get all jobs data count from mongodb
+    app.get("/jobs-count", async (req, res) => {
+      const search = req.query.search;
+      const query = {
+        jobTitle : {$regex : search , $options:'i'}
+      }
+      const count = await jobsCollection.countDocuments(query);
+      res.send({count});
+    });
+    
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
