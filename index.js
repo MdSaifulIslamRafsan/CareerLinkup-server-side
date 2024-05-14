@@ -12,8 +12,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "assignment-no-11-2de58.web.app",
       "https://assignment-no-11-2de58.web.app",
+      "https://assignment-no-11-2de58.firebaseapp.com",
     ],
     credentials: true,
     optionsSuccessStatus: 200,
@@ -207,7 +207,7 @@ async function run() {
     
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+  
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
