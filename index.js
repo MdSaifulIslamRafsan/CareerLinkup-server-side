@@ -58,6 +58,9 @@ async function run() {
     const applyJobsCollection = client
       .db("CareerLinkup")
       .collection("applyJobs");
+    const resumeCollection = client
+      .db("CareerLinkup")
+      .collection("resume");
 
     // jwt
     app.post("/jwt", async (req, res) => {
@@ -205,6 +208,26 @@ async function run() {
       res.send({count});
     });
     
+    // post mongodb resume 
+    app.post("/resume/:email", async (req, res) => {
+      const resumeData = req.body;
+      const email = req.params.email;
+      const userAlreadyExist = await resumeCollection.findOne({userEmail: email});
+      
+      if(userAlreadyExist){
+        return res.status(400).send('You have already resume added')
+      }
+      const result = await resumeCollection.insertOne(resumeData);
+      res.send(result);
+    });
+    // post mongodb resume 
+    app.get("/resume/:email",  tokenVerify, async (req, res) => {
+      const email = req.params.email;
+      const query = {userEmail : email};
+     
+      const result = await resumeCollection.find(query).toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
   
