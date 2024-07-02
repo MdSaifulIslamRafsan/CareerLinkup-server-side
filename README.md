@@ -13,7 +13,7 @@ This repository contains the backend server-side codebase for a job-seeking webs
 
 ```sh
 git clone https://github.com/MdSaifulIslamRafsan/CareerLinkup-server-side.git
-cd SOULMATE-server-sid
+cd CareerLinkup-server-side
 ```
 
 - Install Dependencies:
